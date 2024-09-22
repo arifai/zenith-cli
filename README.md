@@ -1,0 +1,3 @@
+# Zenith CLI
+
+Zenith CLI is a command-line tool designed to help developers quickly generate new modules based on Zenith templates. With Zenith CLI, users can effortlessly create the foundational structure for the modules they need, saving time and effort in project setup. By using simple commands, users can produce well-structured files ready to be filled with their business logic. Zenith CLI enhances development productivity by providing consistent and standardized templates.
