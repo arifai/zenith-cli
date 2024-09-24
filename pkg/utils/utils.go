@@ -11,15 +11,15 @@ func CheckGoModFileExists() bool {
 	return !os.IsNotExist(err)
 }
 
-func ToCamelCase(str string) string {
+func ConvertCase(str string, capitalizeFirst bool) string {
 	var result strings.Builder
-	upperNext := true
+	upperNext := capitalizeFirst
+
 	for _, r := range str {
 		if !unicode.IsLetter(r) && !unicode.IsDigit(r) {
-			continue
-		}
-		if r == '_' || r == ' ' {
-			upperNext = true
+			if r == '_' || r == ' ' {
+				upperNext = true
+			}
 			continue
 		}
 		if upperNext {
@@ -37,10 +37,10 @@ func ToSnakeCase(str string) string {
 	for i, r := range str {
 		if r == ' ' {
 			result.WriteRune('_')
-		} else if !unicode.IsLetter(r) && !unicode.IsDigit(r) {
-			continue
+		} else if r == '_' {
+			result.WriteRune('_')
 		} else if unicode.IsUpper(r) {
-			if i > 0 && result.Len() > 0 && result.String()[result.Len()-1] != '_' {
+			if i > 0 && (unicode.IsLower(rune(str[i-1])) || str[i-1] == '_') {
 				result.WriteRune('_')
 			}
 			result.WriteRune(unicode.ToLower(r))

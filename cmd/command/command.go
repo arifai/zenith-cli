@@ -7,9 +7,10 @@ import (
 
 var command = &cobra.Command{
 	Use:     "zen",
-	Short:   "Zenith CLI",
-	Long:    "Zenith is a CLI tool for creating project module for Zenith template.",
+	Short:   "Zenith CLI for creating and managing projects.",
 	Version: "1.0.0",
+	Long: "Zenith CLI is a command-line tool for creating and managing projects based on the Zenith boilerplate. " +
+		"It streamlines the setup of project modules, allowing you to quickly generate boilerplate code.",
 }
 
 func Execute() {
@@ -23,5 +24,5 @@ func Execute() {
 }
 
 func init() {
-	command.AddCommand(makeCommand)
+	command.AddCommand(makeCommand, createCommand)
 }
