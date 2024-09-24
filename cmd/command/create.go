@@ -9,7 +9,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
-	"strings"
 )
 
 var (
@@ -55,72 +54,43 @@ func cloneAndSetup(moduleName, orgName string) error {
 		printer.Green("✨ Successfully created %s.", moduleName)
 	}
 
-	if err := updateGoModAndImports(clonePath, moduleName, orgName); err != nil {
+	if err := utils.UpdateGoModAndImports(templateUrl, clonePath, moduleName, orgName); err != nil {
 		printer.Red("🚫 Failed to update module and imports: %v", err)
 		os.Exit(1)
 	}
 
-	return nil
-}
-
-func updateGoModAndImports(clonePath, moduleName, orgName string) error {
-	if err := updateGoMod(clonePath, moduleName, orgName); err != nil {
-		printer.Red("🚫 Failed to update module name: %v", err)
+	if err := deleteFolder(clonePath, ".git"); err != nil {
+		printer.Red("🚫 Failed to delete .git folder: %v", err)
 		os.Exit(1)
 	}
 
-	var newModuleName string
-	if orgName != "" {
-		newModuleName = fmt.Sprintf("%s/%s", orgName, moduleName)
-	} else {
-		newModuleName = moduleName
-	}
-
-	if err := updateImports(clonePath, newModuleName); err != nil {
-		printer.Red("🚫 Failed to update import paths: %v", err)
+	if err := deleteFolder(clonePath, ".idea"); err != nil {
+		printer.Red("🚫 Failed to delete .idea folder: %v", err)
 		os.Exit(1)
 	}
 
 	return nil
 }
 
-func updateGoMod(clonePath, moduleName, orgName string) error {
-	goModPath := filepath.Join(clonePath, "go.mod")
-	content, err := os.ReadFile(goModPath)
-	if err != nil {
-		printer.Red("🚫 Failed to read go.mod: %v", err)
-		os.Exit(1)
+func deleteFolder(basePath, folderName string) error {
+	folderPath := filepath.Join(basePath, folderName)
+
+	if _, err := os.Stat(folderPath); os.IsNotExist(err) {
+		return nil
 	}
 
-	var newModuleName string
-	if orgName != "" {
-		newModuleName = fmt.Sprintf("%s/%s", orgName, moduleName)
-	} else {
-		newModuleName = moduleName
-	}
-
-	newContent := strings.ReplaceAll(string(content), "module "+templateUrl, "module "+newModuleName)
-	if err := os.WriteFile(goModPath, []byte(newContent), 0644); err != nil {
-		printer.Red("🚫 Failed to write go.mod: %v", err)
-		os.Exit(1)
-	}
-
-	return nil
-}
-
-func updateImports(clonePath, newModuleName string) error {
 	var cmd *exec.Cmd
-
 	if runtime.GOOS == "windows" {
-		cmd = exec.Command("powershell", "-Command",
-			"Get-ChildItem -Path '"+clonePath+"' -Filter '*.go' -Recurse | ForEach-Object { (Get-Content $_.FullName) "+
-				"-replace '"+templateUrl+"', '"+newModuleName+"' | Set-Content $_.FullName }")
+		cmd = exec.Command("cmd", "/C", "rmdir", "/S", "/Q", folderPath)
 	} else {
-		cmd = exec.Command("find", clonePath, "-name", "*.go", "-exec", "sed", "-i", "",
-			"s|"+templateUrl+"|"+newModuleName+"|g", "{}", ";")
+		cmd = exec.Command("rm", "-rf", folderPath)
 	}
 
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	return cmd.Run()
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to delete folder %s: %v", folderName, err)
+	}
+
+	return nil
 }
