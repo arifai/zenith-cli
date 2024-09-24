@@ -1,0 +1,13 @@
+package model
+
+import (
+	"github.com/google/uuid"
+	"time"
+)
+
+type {{ ToPascalCase .FeatureName }} struct {
+	ID        uuid.UUID  `json:"id" gorm:"not null;primaryKey;type:uuid;default:uuid_generate_v4()"`
+	Name      string     `json:"name" gorm:"not null;column:name;type:varchar"`
+	CreatedAt time.Time  `json:"created_at" gorm:"column:created_at;autoCreateTime;default:CURRENT_TIMESTAMP"`
+	UpdatedAt *time.Time `json:"updated_at" gorm:"column:updated_at;autoUpdateTime"`
+}

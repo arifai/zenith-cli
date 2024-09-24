@@ -1,0 +1,65 @@
+package service
+
+import (
+	"{{ .ModuleName }}/internal/model"
+	"{{ .ModuleName }}/internal/repository"
+	"{{ .ModuleName }}/internal/types/request"
+	"github.com/google/uuid"
+)
+
+type (
+	{{ ToPascalCase .FeatureName }}Service interface {
+		Create(body *types.{{ ToPascalCase .FeatureName }}CreateRequest) (*model.{{ ToPascalCase .FeatureName }}, error)
+
+		FindByID(id *uuid.UUID) (*model.{{ ToPascalCase .FeatureName }}, error)
+
+		Update(id *uuid.UUID, body *types.{{ ToPascalCase .FeatureName }}UpdateRequest) (*model.{{ ToPascalCase .FeatureName }}, error)
+	}
+
+	{{ ToCamelCase .FeatureName }}Service struct{
+		*Service
+		{{ ToCamelCase .FeatureName }}Repo repository.{{ ToPascalCase .FeatureName }}Repository
+	}
+)
+
+func New{{ ToPascalCase .FeatureName }}Service (service *Service, {{ ToCamelCase .FeatureName }}Repo repository.{{ ToPascalCase .FeatureName }}Repository) {{ ToPascalCase .FeatureName }}Service {
+	return &{{ ToCamelCase .FeatureName }}Service{
+		Service: service,
+		{{ ToCamelCase .FeatureName }}Repo: {{ ToCamelCase .FeatureName }}Repo,
+	}
+}
+
+func (s *{{ ToCamelCase .FeatureName }}Service) Create(body *types.{{ ToPascalCase .FeatureName }}CreateRequest) (*model.{{ ToPascalCase .FeatureName }}, error) {
+	{{ ToCamelCase .FeatureName }} := &model.{{ ToPascalCase .FeatureName }}{Name: body.Name}
+
+	result, err := s.{{ ToCamelCase .FeatureName }}Repo.Create({{ ToCamelCase .FeatureName }})
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (s *{{ ToCamelCase .FeatureName }}Service) FindByID(id *uuid.UUID) (*model.{{ ToPascalCase .FeatureName }}, error) {
+	result, err := s.{{ ToCamelCase .FeatureName }}Repo.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (s *{{ ToCamelCase .FeatureName }}Service) Update(id *uuid.UUID, body *types.{{ ToPascalCase .FeatureName }}UpdateRequest) (*model.{{ ToPascalCase .FeatureName }}, error) {
+	result, err := s.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	result.Name = body.Name
+
+	if err := s.{{ ToCamelCase .FeatureName }}Repo.Update(result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}

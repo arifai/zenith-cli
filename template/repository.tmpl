@@ -1,0 +1,41 @@
+package repository
+
+import (
+	"{{ .ModuleName }}/internal/model"
+	"github.com/google/uuid"
+	"gorm.io/gorm/clause"
+)
+
+type (
+	{{ ToPascalCase .FeatureName }}Repository interface {
+		Create({{ ToCamelCase .FeatureName }} *model.{{ ToPascalCase .FeatureName }}) error
+
+		FindByID(id *uuid.UUID) (*model.{{ ToPascalCase .FeatureName }}, error)
+
+		Update({{ ToCamelCase .FeatureName }} *model.{{ ToPascalCase .FeatureName }}) error
+    }
+
+	{{ ToCamelCase .FeatureName }}Repository struct{ *Repository }
+)
+
+func New{{ ToPascalCase .FeatureName }}Repository(r *Repository) {{ ToPascalCase .FeatureName }}Repository {
+	return &{{ ToCamelCase .FeatureName }}Repository{ r }
+}
+
+func (r *{{ ToCamelCase .FeatureName }}Repository) Create({{ ToCamelCase .FeatureName }} *model.{{ ToPascalCase .FeatureName }}) error {
+	return r.db.Create({{ ToCamelCase .FeatureName }}).Error
+}
+
+func (r *{{ ToCamelCase .FeatureName }}Repository) FindByID(id *uuid.UUID) (*model.{{ ToPascalCase .FeatureName }}, error) {
+	new{{ ToCamelCase .FeatureName }} := new(*model.{{ ToPascalCase .FeatureName }})
+
+	if err := r.db.First(new{{ ToCamelCase .FeatureName }}, id).Error; err != nil {
+		return nil, err
+	}
+
+	return new{{ ToCamelCase .FeatureName }}, nil
+}
+
+func (r *{{ ToCamelCase .FeatureName }}Repository) Update({{ ToCamelCase .FeatureName }} *model.{{ ToPascalCase .FeatureName }}) error {
+	return r.db.Clauses(clause.Returning{}).Save({{ ToCamelCase .FeatureName }}).Error
+}

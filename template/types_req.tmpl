@@ -1,0 +1,11 @@
+package request
+
+type (
+	{{ ToPascalCase .FeatureName }}CreateRequest struct {
+		Name string `json:"name" validate:"required,min=3,max=100"`
+	}
+
+	{{ ToPascalCase .FeatureName }}UpdateRequest struct {
+    	Name string `json:"name" validate:"required,min=3,max=100"`
+    }
+)

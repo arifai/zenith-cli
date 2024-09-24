@@ -1,0 +1,87 @@
+package handler
+
+import (
+	"{{ .ModuleName }}/internal/service"
+    "{{ .ModuleName }}/internal/types/request"
+    "{{ .ModuleName }}/pkg/utils"
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+)
+
+type {{ ToPascalCase .FeatureName }}Handler struct {
+	*Handler
+	{{ ToCamelCase .FeatureName }}Service service.{{ ToPascalCase .FeatureName }}
+}
+
+func New{{ ToPascalCase .FeatureName }}Handler(handler *Handler, {{ ToCamelCase .FeatureName }}Service service.{{ ToPascalCase .FeatureName }}) *{{ ToPascalCase .FeatureName }}Handler {
+	return &{{ ToPascalCase .FeatureName }}Handler {
+		handler: handler,
+		{{ ToCamelCase .FeatureName }}Service: {{ ToCamelCase .FeatureName }}Service,
+	}
+}
+
+func (h *{{ ToPascalCase .FeatureName }}Handler) Create(ctx *gin.Context) {
+	body, err := utils.ValidateBody[request.{{ ToPascalCase .FeatureName }}CreateRequest](ctx)
+	if err != nil {
+		h.response.Error(ctx, err)
+		return
+	}
+
+	result, err := h.{{ ToCamelCase .FeatureName }}Service.Create(body)
+	if err != nil {
+		h.response.Error(ctx, err)
+		return
+	}
+
+	h.response.Created(ctx, "{{ ToPascalCase .FeatureName }} successfully created ", result)
+}
+
+func (h *{{ ToPascalCase .FeatureName }}Handler) FindByID(ctx *gin.Context) {
+	paging, err := utils.ValidateQuery[common.Pagination](ctx)
+	if err != nil {
+    	h.response.Error(ctx, err)
+    	return
+    }
+
+    id, err := uuid.Parse(paging.Search)
+    if err != nil {
+    	h.response.Error(ctx, err)
+		return
+    }
+
+    result, err := h.{{ ToCamelCase .FeatureName }}Service.FindByID(id)
+    if err != nil {
+    	h.response.Error(ctx, err)
+    	return
+    }
+
+    h.response.Success(ctx, result)
+}
+
+func (h *{{ ToPascalCase .FeatureName }}Handler) Update(ctx *gin.Context) {
+	paging, err := utils.ValidateQuery[common.Pagination](ctx)
+    if err != nil {
+		h.response.Error(ctx, err)
+		return
+	}
+
+	id, err := uuid.Parse(paging.Search)
+	if err != nil {
+		h.response.Error(ctx, err)
+		return
+	}
+
+	body, err := utils.ValidateBody[types.{{ ToPascalCase .FeatureName }}UpdateRequest](ctx)
+	if err != nil {
+		h.response.Error(ctx, err)
+		return
+	}
+
+	result, err := h.{{ ToCamelCase .FeatureName }}Service.Update(id, body)
+	if err != nil {
+		h.response.Error(ctx, err)
+		return
+	}
+
+	h.response.Success(ctx, result)
+}

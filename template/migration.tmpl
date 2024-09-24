@@ -1,0 +1,14 @@
+package migration
+
+import (
+	"{{ .ModuleName }}/internal/model"
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+	"log"
+)
+
+func (m *Migration) {{ ToPascalCase .FeatureName }}Migration() {
+	if err := m.db.AutoMigrate(&model.{{ ToPascalCase .FeatureName }}); err != nil {
+		log.Fatalf("Error during {{ ToCamelCase .FeatureName }} migration: %v", err)
+	}
+}
