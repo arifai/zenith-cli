@@ -47,7 +47,7 @@ func cloneAndSetup(moduleName, orgName string) error {
 		os.Exit(1)
 	}
 
-	if err := exec.Command("git", "clone", repoUrl, clonePath).Run(); err != nil {
+	if err := utils.RunCommand("git", "clone", repoUrl, clonePath); err != nil {
 		printer.Red("🚫 Failed to clone repository: %v.", err)
 		os.Exit(1)
 	} else {

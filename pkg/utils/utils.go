@@ -63,8 +63,6 @@ func UpdateGoModAndImports(repoUrl, clonePath, moduleName, orgName string) error
 		os.Exit(1)
 	}
 
-	printer.Yellow("Clone path %s", moduleName)
-
 	newModuleName := constructModuleName(moduleName, orgName)
 
 	if err := updateImports(clonePath, repoUrl, newModuleName); err != nil {
@@ -73,7 +71,7 @@ func UpdateGoModAndImports(repoUrl, clonePath, moduleName, orgName string) error
 	}
 
 	defer func() {
-		err := runCommand("go", "mod", "tidy")
+		err := RunCommand("go", "mod", "tidy")
 		if err != nil {
 			printer.Red("🚫 Failed to run go mod tidy: %v", err)
 			os.Exit(1)
@@ -135,10 +133,8 @@ func updateImports(clonePath, repoUrl, newModuleName string) error {
 	return cmd.Run()
 }
 
-func runCommand(name string, args ...string) error {
+func RunCommand(name string, args ...string) error {
 	cmd := exec.Command(name, args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
 	return cmd.Run()
 }
 
@@ -151,7 +147,7 @@ func GoFmt() error {
 		}
 
 		if !info.IsDir() && filepath.Ext(path) == ".go" {
-			if err := runCommand("gofmt", "-w", path); err != nil {
+			if err := RunCommand("gofmt", "-w", path); err != nil {
 				printer.Red("🚫 Failed to format file %s: %v", path, err)
 				return err
 			}
