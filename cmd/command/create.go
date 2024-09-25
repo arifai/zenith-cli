@@ -1,12 +1,10 @@
 package command
 
 import (
-	"fmt"
 	"github.com/arifai/zenith-cli/pkg/printer"
 	"github.com/arifai/zenith-cli/pkg/utils"
 	"github.com/spf13/cobra"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 )
@@ -55,17 +53,17 @@ func cloneAndSetup(moduleName, orgName string) error {
 	}
 
 	if err := utils.UpdateGoModAndImports(templateUrl, clonePath, moduleName, orgName); err != nil {
-		printer.Red("🚫 Failed to update module and imports: %v", err)
+		printer.Red("🚫 Failed to update module and imports: %v.", err)
 		os.Exit(1)
 	}
 
 	if err := deleteFolder(clonePath, ".git"); err != nil {
-		printer.Red("🚫 Failed to delete .git folder: %v", err)
+		printer.Red("🚫 Failed to delete .git folder: %v.", err)
 		os.Exit(1)
 	}
 
 	if err := deleteFolder(clonePath, ".idea"); err != nil {
-		printer.Red("🚫 Failed to delete .idea folder: %v", err)
+		printer.Red("🚫 Failed to delete .idea folder: %v.", err)
 		os.Exit(1)
 	}
 
@@ -79,16 +77,16 @@ func deleteFolder(basePath, folderName string) error {
 		return nil
 	}
 
-	var cmd *exec.Cmd
 	if runtime.GOOS == "windows" {
-		cmd = exec.Command("cmd", "/C", "rmdir", "/S", "/Q", folderPath)
+		err := utils.RunCommand("cmd", "/C", "rmdir", "/S", "/Q", folderPath)
+		if err != nil {
+			return err
+		}
 	} else {
-		cmd = exec.Command("rm", "-rf", folderPath)
+		err := utils.RunCommand("rm", "-rf", folderPath)
+		if err != nil {
+			return err
+		}
 	}
-
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed to delete folder %s: %v", folderName, err)
-	}
-
 	return nil
 }
