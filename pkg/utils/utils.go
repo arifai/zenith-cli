@@ -127,9 +127,6 @@ func updateImports(clonePath, repoUrl, newModuleName string) error {
 		cmd = exec.Command("find", clonePath, "-name", "*.go", "-exec", "sed", "-i", "",
 			"s|"+repoUrl+"|"+newModuleName+"|g", "{}", ";")
 	}
-
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
 	return cmd.Run()
 }
 
