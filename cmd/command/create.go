@@ -86,8 +86,6 @@ func deleteFolder(basePath, folderName string) error {
 		cmd = exec.Command("rm", "-rf", folderPath)
 	}
 
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to delete folder %s: %v", folderName, err)
 	}
