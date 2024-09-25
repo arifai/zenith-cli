@@ -60,24 +60,29 @@ func ToSnakeCase(str string) string {
 func UpdateGoModAndImports(repoUrl, clonePath, moduleName, orgName string) error {
 	if err := updateGoMod(clonePath, moduleName, orgName); err != nil {
 		printer.Red("🚫 Failed to update go.mod: %v", err)
-		return err
+		os.Exit(1)
 	}
+
+	printer.Yellow("Clone path %s", moduleName)
 
 	newModuleName := constructModuleName(moduleName, orgName)
 
 	if err := updateImports(clonePath, repoUrl, newModuleName); err != nil {
 		printer.Red("🚫 Failed to update import paths: %v", err)
-		return err
+		os.Exit(1)
 	}
 
-	if err := runGoCommand("go", "mod", "tidy"); err != nil {
-		printer.Red("🚫 Failed to run go mod tidy: %v", err)
-		return err
-	}
+	defer func() {
+		err := runCommand("go", "mod", "tidy")
+		if err != nil {
+			printer.Red("🚫 Failed to run go mod tidy: %v", err)
+			os.Exit(1)
+		}
+	}()
 
 	if err := GoFmt(); err != nil {
 		printer.Red("🚫 Failed to format files: %v", err)
-		return err
+		os.Exit(1)
 	}
 
 	return nil
@@ -130,7 +135,7 @@ func updateImports(clonePath, repoUrl, newModuleName string) error {
 	return cmd.Run()
 }
 
-func runGoCommand(name string, args ...string) error {
+func runCommand(name string, args ...string) error {
 	cmd := exec.Command(name, args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -146,7 +151,7 @@ func GoFmt() error {
 		}
 
 		if !info.IsDir() && filepath.Ext(path) == ".go" {
-			if err := runGoCommand("gofmt", "-w", path); err != nil {
+			if err := runCommand("gofmt", "-w", path); err != nil {
 				printer.Red("🚫 Failed to format file %s: %v", path, err)
 				return err
 			}
