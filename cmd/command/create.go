@@ -14,7 +14,7 @@ import (
 var (
 	templateUrl = "github.com/arifai/zenith"
 
-	createCommand = &cobra.Command{
+	CreateCommand = &cobra.Command{
 		Use:     "create [module_name]",
 		Short:   "Create a new project.",
 		Long:    "Creating a new project by cloning the Zenith boilerplate.",
@@ -25,7 +25,7 @@ var (
 )
 
 func init() {
-	createCommand.Flags().StringP("org", "o", "", "specify your organization name.")
+	CreateCommand.Flags().StringP("org", "o", "", "specify your organization name.")
 }
 
 func runCreate(cmd *cobra.Command, args []string) {

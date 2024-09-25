@@ -1,11 +1,12 @@
-package command
+package zen
 
 import (
+	"github.com/arifai/zenith-cli/cmd/command"
 	"github.com/spf13/cobra"
 	"os"
 )
 
-var command = &cobra.Command{
+var zenCommand = &cobra.Command{
 	Use:     "zen",
 	Short:   "Zenith CLI for creating and managing projects.",
 	Version: "1.0.0",
@@ -14,8 +15,8 @@ var command = &cobra.Command{
 }
 
 func Execute() {
-	if err := command.Execute(); err != nil {
-		err := command.Help()
+	if err := zenCommand.Execute(); err != nil {
+		err := zenCommand.Help()
 		if err != nil {
 			return
 		}
@@ -24,5 +25,5 @@ func Execute() {
 }
 
 func init() {
-	command.AddCommand(makeCommand, createCommand)
+	zenCommand.AddCommand(command.MakeCommand, command.CreateCommand)
 }

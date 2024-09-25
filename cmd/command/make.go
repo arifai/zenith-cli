@@ -10,13 +10,13 @@ import (
 	"text/template"
 )
 
-type MakeCommand struct {
+type Make struct {
 	FilePath    string
 	FileType    string
 	FeatureName string
 }
 
-var makeCommand = &cobra.Command{
+var MakeCommand = &cobra.Command{
 	Use:   "make [feature_name]",
 	Short: "Generate boilerplate code for a new feature.",
 	Long: "Generate boilerplate code for a new feature, including router, handler, model, repository, service, and migration files. " +
@@ -28,7 +28,7 @@ var makeCommand = &cobra.Command{
 }
 
 func runMake(_ *cobra.Command, args []string) {
-	m := &MakeCommand{FeatureName: args[0]}
+	m := &Make{FeatureName: args[0]}
 
 	if !utils.CheckGoModFileExists() {
 		printer.Red("🚫 Go module not found. Please ensure that this is a Go project and a go.mod file exists in the root directory.")
@@ -58,7 +58,7 @@ func runMake(_ *cobra.Command, args []string) {
 	}
 }
 
-func (m *MakeCommand) genFile() {
+func (m *Make) genFile() {
 	snakeCaseFeatureName := utils.ToSnakeCase(m.FeatureName)
 	filePath := filepath.Join("internal", m.FilePath, snakeCaseFeatureName+".go")
 
@@ -90,7 +90,7 @@ func (m *MakeCommand) genFile() {
 	}
 }
 
-func (m *MakeCommand) parseTemplate(file *os.File) error {
+func (m *Make) parseTemplate(file *os.File) error {
 	templateFile := fmt.Sprintf("template/%s.tmpl", m.FileType)
 
 	moduleName, err := utils.GetModuleName(".")
@@ -124,7 +124,7 @@ func (m *MakeCommand) parseTemplate(file *os.File) error {
 	return nil
 }
 
-func (m *MakeCommand) templateExists() bool {
+func (m *Make) templateExists() bool {
 	templateFile := fmt.Sprintf("template/%s.tmpl", m.FileType)
 	if _, err := os.Stat(templateFile); os.IsNotExist(err) {
 		return false
@@ -132,7 +132,7 @@ func (m *MakeCommand) templateExists() bool {
 	return true
 }
 
-func postRunE(cmd *cobra.Command, args []string) error {
+func postRunE(_ *cobra.Command, _ []string) error {
 	if err := utils.GoFmt(); err != nil {
 		return err
 	}
