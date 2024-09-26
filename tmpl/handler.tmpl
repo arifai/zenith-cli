@@ -4,18 +4,19 @@ import (
 	"{{ .ModuleName }}/internal/service"
     "{{ .ModuleName }}/internal/types/request"
     "{{ .ModuleName }}/pkg/utils"
+    "{{ .ModuleName }}/pkg/common"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
 type {{ ToPascalCase .FeatureName }}Handler struct {
 	*Handler
-	{{ ToCamelCase .FeatureName }}Service service.{{ ToPascalCase .FeatureName }}
+	{{ ToCamelCase .FeatureName }}Service service.{{ ToPascalCase .FeatureName }}Service
 }
 
-func New{{ ToPascalCase .FeatureName }}Handler(handler *Handler, {{ ToCamelCase .FeatureName }}Service service.{{ ToPascalCase .FeatureName }}) *{{ ToPascalCase .FeatureName }}Handler {
+func New{{ ToPascalCase .FeatureName }}Handler(handler *Handler, {{ ToCamelCase .FeatureName }}Service service.{{ ToPascalCase .FeatureName }}Service) *{{ ToPascalCase .FeatureName }}Handler {
 	return &{{ ToPascalCase .FeatureName }}Handler {
-		handler: handler,
+		Handler: handler,
 		{{ ToCamelCase .FeatureName }}Service: {{ ToCamelCase .FeatureName }}Service,
 	}
 }

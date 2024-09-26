@@ -27,13 +27,13 @@ func (r *{{ ToCamelCase .FeatureName }}Repository) Create({{ ToCamelCase .Featur
 }
 
 func (r *{{ ToCamelCase .FeatureName }}Repository) FindByID(id *uuid.UUID) (*model.{{ ToPascalCase .FeatureName }}, error) {
-	new{{ ToCamelCase .FeatureName }} := new(*model.{{ ToPascalCase .FeatureName }})
+	result := new(*model.{{ ToPascalCase .FeatureName }})
 
-	if err := r.db.First(new{{ ToCamelCase .FeatureName }}, id).Error; err != nil {
+	if err := r.db.First(result, id).Error; err != nil {
 		return nil, err
 	}
 
-	return new{{ ToCamelCase .FeatureName }}, nil
+	return result, nil
 }
 
 func (r *{{ ToCamelCase .FeatureName }}Repository) Update({{ ToCamelCase .FeatureName }} *model.{{ ToPascalCase .FeatureName }}) error {

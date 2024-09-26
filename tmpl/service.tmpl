@@ -9,11 +9,11 @@ import (
 
 type (
 	{{ ToPascalCase .FeatureName }}Service interface {
-		Create(body *types.{{ ToPascalCase .FeatureName }}CreateRequest) (*model.{{ ToPascalCase .FeatureName }}, error)
+		Create(body *request.{{ ToPascalCase .FeatureName }}CreateRequest) (*model.{{ ToPascalCase .FeatureName }}, error)
 
 		FindByID(id *uuid.UUID) (*model.{{ ToPascalCase .FeatureName }}, error)
 
-		Update(id *uuid.UUID, body *types.{{ ToPascalCase .FeatureName }}UpdateRequest) (*model.{{ ToPascalCase .FeatureName }}, error)
+		Update(id *uuid.UUID, body *request.{{ ToPascalCase .FeatureName }}UpdateRequest) (*model.{{ ToPascalCase .FeatureName }}, error)
 	}
 
 	{{ ToCamelCase .FeatureName }}Service struct{
@@ -29,15 +29,14 @@ func New{{ ToPascalCase .FeatureName }}Service (service *Service, {{ ToCamelCase
 	}
 }
 
-func (s *{{ ToCamelCase .FeatureName }}Service) Create(body *types.{{ ToPascalCase .FeatureName }}CreateRequest) (*model.{{ ToPascalCase .FeatureName }}, error) {
+func (s *{{ ToCamelCase .FeatureName }}Service) Create(body *request.{{ ToPascalCase .FeatureName }}CreateRequest) (*model.{{ ToPascalCase .FeatureName }}, error) {
 	{{ ToCamelCase .FeatureName }} := &model.{{ ToPascalCase .FeatureName }}{Name: body.Name}
 
-	result, err := s.{{ ToCamelCase .FeatureName }}Repo.Create({{ ToCamelCase .FeatureName }})
-	if err != nil {
+	if err := s.{{ ToCamelCase .FeatureName }}Repo.Create({{ ToCamelCase .FeatureName }}); err != nil {
 		return nil, err
 	}
 
-	return result, nil
+	return {{ ToCamelCase .FeatureName }}, nil
 }
 
 func (s *{{ ToCamelCase .FeatureName }}Service) FindByID(id *uuid.UUID) (*model.{{ ToPascalCase .FeatureName }}, error) {
@@ -49,7 +48,7 @@ func (s *{{ ToCamelCase .FeatureName }}Service) FindByID(id *uuid.UUID) (*model.
 	return result, nil
 }
 
-func (s *{{ ToCamelCase .FeatureName }}Service) Update(id *uuid.UUID, body *types.{{ ToPascalCase .FeatureName }}UpdateRequest) (*model.{{ ToPascalCase .FeatureName }}, error) {
+func (s *{{ ToCamelCase .FeatureName }}Service) Update(id *uuid.UUID, body *request.{{ ToPascalCase .FeatureName }}UpdateRequest) (*model.{{ ToPascalCase .FeatureName }}, error) {
 	result, err := s.FindByID(id)
 	if err != nil {
 		return nil, err

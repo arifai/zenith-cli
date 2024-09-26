@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"github.com/arifai/zenith-cli/pkg/printer"
 	"github.com/arifai/zenith-cli/pkg/utils"
+	"github.com/arifai/zenith-cli/tmpl"
 	"github.com/spf13/cobra"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"text/template"
@@ -16,16 +18,18 @@ type Make struct {
 	FeatureName string
 }
 
-var MakeCommand = &cobra.Command{
-	Use:   "make [feature_name]",
-	Short: "Generate boilerplate code for a new feature.",
-	Long: "Generate boilerplate code for a new feature, including router, handler, model, repository, service, and migration files. " +
-		"This command helps you quickly scaffold the essential components of a new feature in your application.",
-	Args:     cobra.ExactArgs(1),
-	Example:  "zen make account",
-	Run:      runMake,
-	PostRunE: postRunE,
-}
+var (
+	MakeCommand = &cobra.Command{
+		Use:   "make [feature_name]",
+		Short: "Generate boilerplate code for a new feature.",
+		Long: "Generate boilerplate code for a new feature, including router, handler, model, repository, service, and migration files. " +
+			"This command helps you quickly scaffold the essential components of a new feature in your application.",
+		Args:     cobra.ExactArgs(1),
+		Example:  "zen make account",
+		Run:      runMake,
+		PostRunE: postRunE,
+	}
+)
 
 func runMake(_ *cobra.Command, args []string) {
 	m := &Make{FeatureName: args[0]}
@@ -50,7 +54,7 @@ func runMake(_ *cobra.Command, args []string) {
 		m.FilePath = filePath
 
 		if !m.templateExists() {
-			printer.Yellow("⚠️ Skipping %s, template file template/%s.tmpl does not exist.", m.FileType, m.FileType)
+			printer.Yellow("⚠️ Skipping %s, tmpl file tmpl/%s.tmpl does not exist.", m.FileType, m.FileType)
 			continue
 		}
 
@@ -63,7 +67,7 @@ func (m *Make) genFile() {
 	filePath := filepath.Join("internal", m.FilePath, snakeCaseFeatureName+".go")
 
 	if _, err := os.Stat(filePath); err == nil {
-		printer.Yellow("⚠️ File %s already exists.", filePath)
+		printer.Yellow("📦 File %s already exists.", filePath)
 	}
 
 	if err := os.MkdirAll(filepath.Dir(filePath), os.ModePerm); err != nil {
@@ -83,7 +87,7 @@ func (m *Make) genFile() {
 	}(file)
 
 	if err := m.parseTemplate(file); err != nil {
-		printer.Red("🚫 Failed to execute template: %v", err)
+		printer.Red("🚫 Failed to execute tmpl: %v", err)
 		os.Exit(1)
 	} else {
 		printer.Green("✨ Successfully generated file %s.", filePath)
@@ -91,13 +95,7 @@ func (m *Make) genFile() {
 }
 
 func (m *Make) parseTemplate(file *os.File) error {
-	templateFile := fmt.Sprintf("template/%s.tmpl", m.FileType)
-
-	moduleName, err := utils.GetModuleName(".")
-	if err != nil {
-		printer.Red("🚫 Error getting module name: %v", err)
-		os.Exit(1)
-	}
+	tmplFile := fmt.Sprintf("%s.tmpl", m.FileType)
 
 	funcMap := template.FuncMap{
 		"ToSnakeCase": utils.ToSnakeCase,
@@ -109,24 +107,35 @@ func (m *Make) parseTemplate(file *os.File) error {
 		},
 	}
 
-	tmpl, err := template.New(filepath.Base(templateFile)).Funcs(funcMap).ParseFiles(templateFile)
+	t, err := template.New(tmplFile).Funcs(funcMap).ParseFS(tmpl.TemplateFile, tmplFile)
 	if err != nil {
-		printer.Red("🚫 Failed to parse template file %s: %v", templateFile, err)
-		os.Exit(1)
+		return fmt.Errorf("failed to parse template: %v", err)
 	}
 
-	data := map[string]interface{}{"FeatureName": m.FeatureName, "ModuleName": moduleName}
-	if err := tmpl.Execute(file, data); err != nil {
-		printer.Red("🚫 Failed to execute template for file %s: %v", templateFile, err)
-		os.Exit(1)
+	moduleName, err := utils.GetModuleName(".")
+	if err != nil {
+		return fmt.Errorf("error getting module name: %v", err)
+	}
+
+	data := map[string]interface{}{
+		"FeatureName": m.FeatureName,
+		"ModuleName":  moduleName,
+	}
+
+	if err := t.Execute(file, data); err != nil {
+		return fmt.Errorf("failed to execute template: %v", err)
 	}
 
 	return nil
 }
 
 func (m *Make) templateExists() bool {
-	templateFile := fmt.Sprintf("template/%s.tmpl", m.FileType)
-	if _, err := os.Stat(templateFile); os.IsNotExist(err) {
+	templateFile := fmt.Sprintf("%s.tmpl", m.FileType)
+	_, err := fs.Stat(tmpl.TemplateFile, templateFile)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
 		return false
 	}
 	return true

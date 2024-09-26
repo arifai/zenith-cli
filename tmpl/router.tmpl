@@ -6,14 +6,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func {{ ToPascalCase .FeatureName }}Router(group *gin.RouterGroup, {{ ToCamelCase .FeatureName }}Handler *handler.{{ ToPascalCase .FeatureName }}, strictAuthMiddleware *middleware.StrictAuthMiddleware) {
+func {{ ToPascalCase .FeatureName }}Router(group *gin.RouterGroup, {{ ToCamelCase .FeatureName }}Handler *handler.{{ ToPascalCase .FeatureName }}Handler, strictAuthMiddleware *middleware.StrictAuthMiddleware) {
 	{{ ToCamelCase .FeatureName }}Group := group.Group("/{{ ToSnakeCase .FeatureName }}", strictAuthMiddleware.StrictAuth())
 
-	setup{{ ToCamelCase .FeatureName }}Group := func(g *gin.RouterGroup) {
+	setup{{ ToPascalCase .FeatureName }}Group := func(g *gin.RouterGroup) {
 		{{ ToCamelCase .FeatureName }}Group.POST("/create", {{ ToCamelCase .FeatureName }}Handler.Create)
 		{{ ToCamelCase .FeatureName }}Group.GET("", {{ ToCamelCase .FeatureName }}Handler.FindByID)
 		{{ ToCamelCase .FeatureName }}Group.PUT("/update", {{ ToCamelCase .FeatureName }}Handler.Update)
 	}
 
-	setup{{ ToCamelCase .FeatureName }}Group({{ ToCamelCase .FeatureName }}Group)
+	setup{{ ToPascalCase .FeatureName }}Group({{ ToCamelCase .FeatureName }}Group)
 }
