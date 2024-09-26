@@ -27,7 +27,7 @@ func (r *{{ ToCamelCase .FeatureName }}Repository) Create({{ ToCamelCase .Featur
 }
 
 func (r *{{ ToCamelCase .FeatureName }}Repository) FindByID(id *uuid.UUID) (*model.{{ ToPascalCase .FeatureName }}, error) {
-	result := new(*model.{{ ToPascalCase .FeatureName }})
+	result := new(model.{{ ToPascalCase .FeatureName }})
 
 	if err := r.db.First(result, id).Error; err != nil {
 		return nil, err
