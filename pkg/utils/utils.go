@@ -70,20 +70,17 @@ func UpdateGoModAndImports(repoUrl, clonePath, moduleName, orgName string) error
 		os.Exit(1)
 	}
 
-	defer func() {
-		errs := os.Chdir(clonePath)
-		if errs != nil {
-			return
-		}
+	if err := os.Chdir(clonePath); err != nil {
+		printer.Red("🚫 Failed to change directory: %v.", err)
+		os.Exit(1)
+	}
 
-		err := RunCommand("go", "mod", "tidy")
-		if err != nil {
-			printer.Red("🚫 Failed to run go mod tidy: %v.", err)
-			os.Exit(1)
-		} else {
-			printer.Green("✨ Successfully running go mod tidy.")
-		}
-	}()
+	if err := RunCommand("go", "mod", "tidy"); err != nil {
+		printer.Red("🚫 Failed to run go mod tidy: %v.", err)
+		os.Exit(1)
+	} else {
+		printer.Green("✨ Successfully running go mod tidy.")
+	}
 
 	if err := GoFmt(); err != nil {
 		printer.Red("🚫 Failed to format files: %v.", err)
