@@ -41,7 +41,7 @@ func cloneAndSetup(moduleName, orgName string) error {
 	repoUrl := "https://" + templateUrl
 
 	if _, err := os.Stat(clonePath); !os.IsNotExist(err) {
-		printer.Yellow("⚠️ Folder %s is already exists.", moduleName)
+		printer.Yellow("📦 Folder %s is already exists.", moduleName)
 		os.Exit(1)
 	}
 
