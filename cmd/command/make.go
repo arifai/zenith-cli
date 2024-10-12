@@ -26,17 +26,20 @@ var (
 			"This command helps you quickly scaffold the essential components of a new feature in your application.",
 		Args:     cobra.ExactArgs(1),
 		Example:  "zen make account",
-		Run:      runMake,
-		PostRunE: postRunE,
+		RunE:     runMake,
+		PostRunE: PostRunE,
 	}
 )
 
-func runMake(_ *cobra.Command, args []string) {
+func init() {
+	MakeCommand.Flags().StringP("org", "o", "", "specify your organization name")
+}
+
+func runMake(_ *cobra.Command, args []string) error {
 	m := &Make{FeatureName: args[0]}
 
 	if !utils.CheckGoModFileExists() {
-		printer.Red("🚫 Go module not found. Please ensure that this is a Go project and a go.mod file exists in the root directory.")
-		os.Exit(1)
+		return fmt.Errorf("go module not found. Please ensure that this is a Go project and a go.mod file exists in the root directory")
 	}
 
 	paths := map[string]string{
@@ -58,11 +61,16 @@ func runMake(_ *cobra.Command, args []string) {
 			continue
 		}
 
-		m.genFile()
+		err := m.genFile()
+		if err != nil {
+			printer.Red("🚫 Error: %v\n", err)
+			return err
+		}
 	}
+	return nil
 }
 
-func (m *Make) genFile() {
+func (m *Make) genFile() error {
 	snakeCaseFeatureName := utils.ToSnakeCase(m.FeatureName)
 	filePath := filepath.Join("internal", m.FilePath, snakeCaseFeatureName+".go")
 
@@ -71,13 +79,12 @@ func (m *Make) genFile() {
 	}
 
 	if err := os.MkdirAll(filepath.Dir(filePath), os.ModePerm); err != nil {
-		printer.Red("🚫 Failed to create directory %s: %v.", filepath.Dir(filePath), err)
+		return fmt.Errorf("failed to create directory %s: %v", filepath.Dir(filePath), err)
 	}
 
 	file, err := os.Create(filePath)
 	if err != nil {
-		printer.Red("🚫 Failed to create file %s: %v.", filePath, err)
-		os.Exit(1)
+		return fmt.Errorf("failed to create file %s: %v", filePath, err)
 	}
 	defer func(file *os.File) {
 		err := file.Close()
@@ -87,11 +94,11 @@ func (m *Make) genFile() {
 	}(file)
 
 	if err := m.parseTemplate(file); err != nil {
-		printer.Red("🚫 Failed to execute tmpl: %v", err)
-		os.Exit(1)
+		return fmt.Errorf("failed to execute tmpl: %v", err)
 	} else {
 		printer.Green("✨ Successfully generated file %s.", filePath)
 	}
+	return nil
 }
 
 func (m *Make) parseTemplate(file *os.File) error {
@@ -139,12 +146,4 @@ func (m *Make) templateExists() bool {
 		return false
 	}
 	return true
-}
-
-func postRunE(_ *cobra.Command, _ []string) error {
-	if err := utils.GoFmt(); err != nil {
-		return err
-	}
-
-	return nil
 }
